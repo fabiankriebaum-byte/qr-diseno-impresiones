@@ -54,6 +54,21 @@
         .egreso { color: #b42318; }
         .tabla { overflow-x: auto; }
         .secundario { background: #526579; }
+        .editar {
+            display: inline-block;
+            background: #e6edf5;
+            color: #17365d;
+            padding: 9px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin: 4px 0;
+        }
+        .eliminar {
+            background: #b42318;
+            padding: 9px 12px;
+            margin: 4px 0;
+        }
+        .acciones { min-width: 110px; }
     </style>
 </head>
 <body>
@@ -91,6 +106,7 @@
     <section class="panel">
         <h2>Registrar movimiento</h2>
         <p th:if="${error}" th:text="${error}" style="color:red"></p>
+        <p th:if="${mensaje}" th:text="${mensaje}" style="color:green"></p>
 
         <form action="/movimientos" method="post">
             <label for="tipo">Tipo de movimiento</label>
@@ -123,6 +139,7 @@
             Movimientos del
             <span th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}"></span>
         </h2>
+
         <div class="tabla">
             <table>
                 <thead>
@@ -131,6 +148,7 @@
                         <th>Concepto</th>
                         <th>Medio de pago</th>
                         <th>Importe</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -139,9 +157,27 @@
                         <td th:text="${m.concepto}"></td>
                         <td th:text="${m.medioPago}"></td>
                         <td th:text="${#numbers.formatDecimal(m.importe, 1, 2)}"></td>
+                        <td class="acciones">
+                            <a class="editar"
+                               th:href="@{/movimientos/{id}/editar(id=${m.id})}">
+                                Editar
+                            </a>
+
+                            <form
+                                th:action="@{/movimientos/{id}/eliminar(id=${m.id})}"
+                                method="post"
+                                onsubmit="return confirm('¿Seguro que querés eliminar este movimiento?');">
+                                <button type="submit" class="eliminar">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </td>
                     </tr>
+
                     <tr th:if="${#lists.isEmpty(movimientos)}">
-                        <td colspan="4">No hay movimientos registrados en esta fecha.</td>
+                        <td colspan="5">
+                            No hay movimientos registrados en esta fecha.
+                        </td>
                     </tr>
                 </tbody>
             </table>
