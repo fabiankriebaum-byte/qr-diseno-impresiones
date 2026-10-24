@@ -1,36 +1,130 @@
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>QR Diseño e Impresiones</title>
+    <title>QR Diseño e Impresiones - Caja</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f2f4f7;
-            margin: 0;
-            padding: 30px 16px;
+            max-width: 1000px;
+            margin: 25px auto;
+            padding: 0 15px;
+            background: #f3f5f7;
             color: #222;
         }
-        main {
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 28px;
+        h1 { color: #17365d; }
+        .panel {
             background: white;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 2px 12px #0001;
+            padding: 20px;
+            margin: 18px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 7px #0001;
         }
-        h1 { color: #174a75; }
-        p { line-height: 1.6; }
+        .resumen {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .resumen div { flex: 1; min-width: 150px; }
+        label { display: block; margin-top: 12px; font-weight: bold; }
+        input, select, button {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 11px;
+            margin-top: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #17365d;
+            color: white;
+            border: 0;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 18px;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 6px; border-bottom: 1px solid #ddd; }
+        .ingreso { color: #18723a; }
+        .egreso { color: #b42318; }
+        .tabla { overflow-x: auto; }
     </style>
 </head>
 <body>
-    <main>
-        <h1>QR Diseño e Impresiones</h1>
-        <p>Sistema de ingresos, egresos y caja</p>
-        <p>La aplicación está instalada correctamente.</p>
-    </main>
+    <h1>QR Diseño e Impresiones</h1>
+    <p>Sistema de ingresos, egresos y caja</p>
+
+    <section class="panel resumen">
+        <div>
+            <h3>Ingresos del día</h3>
+            <h2 class="ingreso" th:text="${ingresos}">$0</h2>
+        </div>
+        <div>
+            <h3>Egresos del día</h3>
+            <h2 class="egreso" th:text="${egresos}">$0</h2>
+        </div>
+        <div>
+            <h3>Saldo del día</h3>
+            <h2 th:text="${ingresos.subtract(egresos)}">$0</h2>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Registrar movimiento</h2>
+        <p th:if="${error}" th:text="${error}" style="color:red"></p>
+
+        <form action="/movimientos" method="post">
+            <label for="tipo">Tipo de movimiento</label>
+            <select id="tipo" name="tipo" required>
+                <option value="INGRESO">Ingreso</option>
+                <option value="EGRESO">Egreso</option>
+            </select>
+
+            <label for="concepto">Concepto</label>
+            <input id="concepto" name="concepto" maxlength="200"
+                   placeholder="Ej.: impresiones, papel, tinta..." required>
+
+            <label for="importe">Importe ($)</label>
+            <input id="importe" name="importe" type="number"
+                   min="0.01" step="0.01" required>
+
+            <label for="medioPago">Medio de pago</label>
+            <select id="medioPago" name="medioPago" required>
+                <option value="EFECTIVO">Efectivo</option>
+                <option value="TRANSFERENCIA">Transferencia</option>
+                <option value="OTRO">Otro</option>
+            </select>
+
+            <button type="submit">Guardar movimiento</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2>Movimientos de hoy</h2>
+        <div class="tabla">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Concepto</th>
+                        <th>Medio de pago</th>
+                        <th>Importe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${movimientos}">
+                        <td th:text="${m.tipo}"></td>
+                        <td th:text="${m.concepto}"></td>
+                        <td th:text="${m.medioPago}"></td>
+                        <td th:text="${#numbers.formatDecimal(m.importe, 1, 2)}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(movimientos)}">
+                        <td colspan="4">Todavía no hay movimientos registrados hoy.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 </body>
 </html>
