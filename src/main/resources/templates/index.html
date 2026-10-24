@@ -45,15 +45,33 @@
             margin-top: 18px;
         }
         table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 10px 6px; border-bottom: 1px solid #ddd; }
+        th, td {
+            text-align: left;
+            padding: 10px 6px;
+            border-bottom: 1px solid #ddd;
+        }
         .ingreso { color: #18723a; }
         .egreso { color: #b42318; }
         .tabla { overflow-x: auto; }
+        .secundario { background: #526579; }
     </style>
 </head>
 <body>
     <h1>QR Diseño e Impresiones</h1>
     <p>Sistema de ingresos, egresos y caja</p>
+
+    <section class="panel">
+        <h2>Consultar movimientos por fecha</h2>
+        <form action="/" method="get">
+            <label for="fecha">Elegí el día que querés consultar</label>
+            <input id="fecha" name="fecha" type="date"
+                   th:value="${fecha}" required>
+            <button type="submit">Consultar fecha</button>
+        </form>
+        <form action="/" method="get">
+            <button type="submit" class="secundario">Volver a hoy</button>
+        </form>
+    </section>
 
     <section class="panel resumen">
         <div>
@@ -101,7 +119,10 @@
     </section>
 
     <section class="panel">
-        <h2>Movimientos de hoy</h2>
+        <h2>
+            Movimientos del
+            <span th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}"></span>
+        </h2>
         <div class="tabla">
             <table>
                 <thead>
@@ -120,7 +141,7 @@
                         <td th:text="${#numbers.formatDecimal(m.importe, 1, 2)}"></td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(movimientos)}">
-                        <td colspan="4">Todavía no hay movimientos registrados hoy.</td>
+                        <td colspan="4">No hay movimientos registrados en esta fecha.</td>
                     </tr>
                 </tbody>
             </table>
