@@ -8,6 +8,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 @Controller
 public class CajaController {
@@ -19,14 +20,25 @@ public class CajaController {
     }
 
     @GetMapping("/")
-    public String inicio(Model model) {
-        LocalDate hoy = LocalDate.now();
+    public String inicio(
+            @RequestParam(required = false) String fecha,
+            Model model) {
+
+        LocalDate dia = LocalDate.now();
+
+        if (fecha != null && !fecha.isBlank()) {
+            try {
+                dia = LocalDate.parse(fecha);
+            } catch (DateTimeParseException e) {
+                model.addAttribute("error", "La fecha ingresada no es válida.");
+            }
+        }
 
         model.addAttribute("movimientos",
-                repository.findByFechaOrderByIdDesc(hoy));
-        model.addAttribute("fecha", hoy);
-        model.addAttribute("ingresos", calcularTotal("INGRESO", hoy));
-        model.addAttribute("egresos", calcularTotal("EGRESO", hoy));
+                repository.findByFechaOrderByIdDesc(dia));
+        model.addAttribute("fecha", dia);
+        model.addAttribute("ingresos", calcularTotal("INGRESO", dia));
+        model.addAttribute("egresos", calcularTotal("EGRESO", dia));
 
         return "index";
     }
@@ -40,7 +52,8 @@ public class CajaController {
             RedirectAttributes redirect) {
 
         if (!tipo.equals("INGRESO") && !tipo.equals("EGRESO")) {
-            redirect.addFlashAttribute("error", "Tipo de movimiento inválido.");
+            redirect.addFlashAttribute("error",
+                    "Tipo de movimiento inválido.");
             return "redirect:/";
         }
 
